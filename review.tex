@@ -1,0 +1,254 @@
+\documentclass[12pt]{article}
+
+\usepackage{fullpage, url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\renewcommand{\thesubsection}{Section \arabic{subsection}}
+\newcommand{\R}{\mathbb{R}^2_+}
+\newcommand{\pref}{\succeq}
+\newcommand{\ceiling}[1]{{\left\lceil #1 \right\rceil}}
+\newcommand{\Lag}{\mathcal{L}}
+\newcommand{\opxo}{x^{\ast}_1}
+\newcommand{\opxt}{x^{\ast}_2}
+\newcommand{\opxr}{x^{\ast}_R}
+\newcommand{\di}{\partial}
+\newcommand{\opxoa}{x^{A\ast}_1}
+\newcommand{\opxta}{x^{A\ast}_2}
+\newcommand{\opxra}{x^{A\ast}_R}
+\newcommand{\opxob}{x^{B\ast}_1}
+\newcommand{\opxtb}{x^{B\ast}_2}
+\newcommand{\opxrb}{x^{B\ast}_R}
+\newcommand{\opxa}{x^{A\ast}}
+\newcommand{\opxb}{x^{B\ast}}
+\newcommand{\opp}{p^{\ast}}
+\newcommand{\oppo}{p^{\ast}_1}
+\newcommand{\oppt}{p^{\ast}_2}
+\newcommand{\oppr}{p^{\ast}_R}
+\begin{document}
+
+\begin{center}
+{\Large\bf University of Waterloo}\\
+\vspace{3mm}
+{\Large\bf ECON301 Winter 2018}\\
+\vspace{3mm}
+{\Large\bf Review}\\
+
+\end{center}
+
+\def\question#1{\item[\bf #1.]}
+\def\part#1{\item[\bf #1)]}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   Q1
+\noindent
+\textbf{Consumption bundle:}\\
+
+\noindent
+A consumption bundle is a vector $x = (x_1, x_2) \in \R$, i.e. $x_1, x_2 \geq 0$. Given prices $p$ and income $m$, consumer's budget set is
+	\[B = \{(x_1, x_2) \in \mathbb{R}^2_+: p_1x_1 + p_2x_2 \leq m \}\]
+\noindent
+\textbf{Preference relations:}
+\begin{itemize}
+	\item Strictly prefer: $\succ$
+	\item Weakly prefer: $\succeq$
+	\item Indifference: $\sim$
+\end{itemize}
+The preferene relation $\succeq$ on $\mathbb{R}^2_+$ is \textbf{complete} if for all $x, y\in \mathbb{R}^2_+$, either $x \succeq y$ or $y \succeq x$ (or both), \textbf{transitive} if for all $x, y\in \mathbb{R}^2_+$ s.t. $x\succeq y \succeq z$, we have $x \succeq z$. \\
+
+\noindent
+The preference relation $\pref$ on $\R$ is:
+\begin{enumerate}
+	\item Montone if for all $x, y \in \R$ s.t. $x_1 > y_1$ and $x_2 > y_2$, we have that $x \succ y$.
+	\item Convex if for all $x, y \in \R$ s.t. $x \sim y$ and for all $0 \leq \alpha \leq 1$, we have that\\ $\alpha x + (1-\alpha)y \pref x$.
+\end{enumerate} 
+
+\noindent
+\textbf{Utility:}\\
+
+\noindent
+Consumer's utility maximization problem (UMP):
+\[\max_{x_1, x_2 \geq 0} u(x_1, x_2) \text{ s.t. } p_1x_1 + p_2x_2 \leq m\]
+\noindent
+Solutions to are demand functions $x_1(p, m)$ and $x_2(p, m)$. \\
+
+\clearpage
+\noindent
+\textbf{Method of Lagrange:}\\
+
+\noindent
+To be used if $u$ is differentiable. 
+\begin{enumerate}
+	\item Define Lagrangean.
+	\[ \Lag(x_1, x_2, \lambda) = u(x_1, x_2) + \lambda(m-p_1x_1-p_2x_2)
+	    \]
+	\item If the solution $x^{\star}$ to (PE) is s.t. $\opxo, \opxt \ne 0$, then it must solve the system of first-order conditions:
+   \begin{align*}
+    \frac{\di}{\di x_i}  \Lag(\opxo, \opxt, \lambda) =& \frac{\di}{\di x_i}u(\opxo, \opxt) - \lambda p_i = 0  \text{ (L}i)\text{ for } i = 1, 2\\
+	 \frac{\di}{\di \lambda} \Lag(\opxo, \opxt, \lambda) =& m - p_1\opxo - p_2\opxt = 0  \text{ (L}\lambda)	
+  \end{align*}
+	The restriction that $\opxo, opxt \ne 0$ implies that solution $x^{\star}$ is iterior.\\
+	\[
+	\frac{\frac{\di}{\di x_1}u(\opxo, \opxt)}{\frac{\di}{\di x_2}u(\opxo, \opxt)} = \frac{p_1}{p_2} \text{ (MRS)}
+	\]
+	\item Suppose that solution to (PE) is s.t. $\opxt = 0$. Then we must have that $\opxo = \frac{m}{p_1}$. \\
+	A necessary condition for $(\frac{m}{p_1}, 0)$ to be optimal is that increasing consumption of good 2 while staying on budget line cannot increase consumer's utility, i.e. slope of indifference curve $\geq$ slope of budget line. 
+	\[
+		\frac{\frac{\di}{\di x_1}u(\frac{m}{p_1}, 0)}{\frac{\di}{\di x_2}u(\frac{m}{p_1}, 0)} \geq \frac{p_1}{p_2} 
+	\]
+	\item Similarly, necessary condition for $(0, \frac{m}{p_2})$ to be optimal is:
+		\[
+	\frac{\frac{\di}{\di x_1}u(0, \frac{m}{p_2})}{\frac{\di}{\di x_2}u(0, \frac{m}{p_2})} \geq \frac{p_2}{p_1} 
+	\] 
+	\item FOC (L1)-(L$\lambda$) are only necessary for $x^{\star}$ to be optimal, i.e. any solution $x^{\star}$ to (PE) must be a solution to  (L1)-(L$\lambda$) but some solutions to  (L1)-(L$\lambda$)  are not solutions to (PE).\\
+   \textbf{Result:} If the consumer's preferences are \emph{monotone} and \emph{convex}, then any solution to  (L1)-(L$\lambda$) must be a solution to (PE). 
+\end{enumerate}
+\noindent
+\textbf{Endowments:}\\
+
+\noindent
+An endowment is a consumption bundle $\omega = (\omega_1,\omega_2) \in \R$, where $\omega_i$ is the quantity of good $i = 1,2$ that belong to consumer. Given prices $p$ and endowment $\omega$, budget set is: 
+\[ B = \{ (x_1, x_2) \in \R: p_1x_1 + p_2x_2 \leq p_1\omega_1 + p_2\omega_2  \}
+\]
+
+\noindent
+\textbf{Competitive Equilibrium:}\\
+
+\noindent
+A competitive equilibrium $(\opxa, \opxb, p^{\ast})$ consists of an allocation of goods $x^{J\ast} = (x^{J\ast}_1, x^{J\ast}_2)$ for each consumer $J = A, B$ along with prices $\opp = \oppo, \oppt$ which satisfy: 
+\begin{enumerate}
+	\item Given prices $\opp = (\oppo, \oppt)$, the allocations $x^{J\ast}$ for consumer $J= A, B$ is a solution to UMP. \\
+	\[ \max_{x^{J\ast} \in \R} u^{J}(x^{J}_1, x^{J}_2) \text{ s.t. } p_1x^{J}_1 + p_2x^{J}_2 \leq p_1\omega^{J}_1 + p_2\omega^{J}_2
+	\]
+	\item For each good $i=1,2$, the aggregate allocations exhaust aggregate endowments:
+	\[ x^{A\ast}_i + x^{B\ast}_i = \omega^{A}_i + \omega^{B}_i \text{ (MCi)}
+	\]
+\end{enumerate}
+\noindent
+\textbf{Result:} If consumers' preferences are monotone, and if (MC1) holds, then (MC2) also holds. \\
+
+
+\noindent
+\textbf{Welfare:}\\
+
+\noindent
+Allocations $x^{A}$ and $x^{B}$ Pareto dominate allocations $y^{A}$ and $y^{B}$ if $u^{J}(x^J_1, x^J_2) \geq u^J(y^J_1, y^J_2) $ for all $J = A, B$ with (at least) one inequality strict. \\
+Pareto-efficient allocations $x^A$ and $x^B$ are not Pareto dominated by any feasible allocations $y^A$ and $y^B$. \\
+\textbf{Result:} Allocations consistent with bargaining between consumers are Pareto efficient allocations $x^A$ and $x^B$ s.t. $u^J(x^J_1, x^J_2) \geq u^J(\omega^J_1, \omega^J_2)$ for all $J =A, B$.\\
+
+\noindent
+Finding Pareto-efficient allocations:
+\begin{enumerate}
+	\item Start with allocations $y^A$ and $y^B$.
+	\item Find optimal allocations $x^A$ and $x^B$ for consumer $A$ s.t. consumer $B$ is indifferent between $x^B$ and $y^B$. 
+	\[ \max_{\{ 0\leq x^A_i \leq \omega^A_i+\omega^B_i  \}_{i=1,2}} u^{A}(x^{A}_1, x^{A}_2) \text{ s.t. } u^B(\omega^A_1+\omega^B_1 - x^A_1, \omega^A_2+\omega^B_2-x^A_2) = u^B(y^B_1, y^B_2)
+	\]
+\end{enumerate}
+\textbf{Result:}If both consumers' preferences are monotone and convex, then solutions to FOC are Pareto-efficient allocations. \\
+	\[
+\frac{\frac{\di}{\di x^A_1}u^A(\opxoa, \opxta)}{\frac{\di}{\di x^A_2}u^A(\opxoa, \opxta)} = \frac{\frac{\di}{\di x^B_1}u^B(\opxob, \opxtb)}{\frac{\di}{\di x^B_2}u^B(\opxob, \opxtb)}
+\]
+Allocations $y^A$ and $y^B$ are arbitrary, can find more Pareto-efficient allocations by considering different initial allocations. The set of all Pareto-efficient allocations is the Pareto set, or contract curve. \\
+
+\noindent
+\textbf{First Welfare Theorem:} Suppose that consumers' preferences are monotone and that price $\opp$ and allocations $\opxa$ and $\opxb$ form a competitive equilibrium. Then $\opxa$ and $\opxb$ are Pareto-efficient.\\
+\begin{itemize}
+	\item Competitive equilibrium must exhaust gains from trade.
+	\item Competitive equilibrium allocations reproduce the outcomes of some bargaining protocal.
+    \item In bargaining, computing outcomes requires a lot of information about consumers' preferences and aggregate endowments. 
+    \item Markets only require consumers to know their own preferences and endowments. 
+    \item Prices aggregate economy-wide information. 
+\end{itemize}
+
+\noindent
+\textbf{No-envy:} Allocations $\opxa$ and $\opxb$ have no-envy if:
+\begin{align*}
+u^A(x^A_1, x^A_2) \geq& u^A(x^B_1, x^B_2) \text{ and}\\
+u^B(x^B_1, x^B_2) \geq& u^B(x^A_1, x^A_2)
+\end{align*}
+\textbf{Fairness:} Allocations $x^A$ and $x^B$ are fair if they are Pareto-efficient and satisfy no-envy.\\
+
+\noindent
+\textbf{Second Welfare Theorem:} If consumers' preferences are monotone and convex, then for any Pareto-efficient allocations $x^A$ and $x^B$, there exist endowments $\omega^A$ and $\omega^B$ along with a competitive equilibrium that generates $x^A$ and $x^B$. 
+\begin{itemize}
+	\item Competitive equilibria take no stand on final distribution of goods. 
+	\item SWT leaves room for governement intervention that is consistent with Pareto-efficiency (e.g. taxation). 
+\end{itemize}
+
+\noindent
+\textbf{Externalities:}
+\begin{itemize}
+	\item An advantage of competitive markets is their decentralization.
+	\item A problem can arise if consumption choices of some consumers impact well-being of other consumers: these are called consumption externalities.
+	\item A positive externality is present if some consumers benefit from the consumption of a good by other consumers.
+	\item A negative externality is the reverse.
+\end{itemize}
+
+\noindent
+Example:\\
+$\omega^A = (2,1), \omega^B = (1,1), u^A(x^A_1, x^A_2) = {x^A_1}^\frac{1}{2}{x^A_2}^\frac{1}{2}, u^B(x^B_1, x^A_2) = {x^B_1}^\frac{1}{2}{(2-x^A_2)}^\frac{1}{2}$. \\
+Consumption of good 2 by consumer $A$ imposes a negative externality on consumer B. \\
+
+\noindent
+Markets only for good 1 and good 2:\\
+Demand functions:\\
+\[(x^A_1(p), x^A_2(p)) = (\frac{2p_1+p_2}{2p_1},\frac{2p_1+p_2}{2p_2})\]
+\[(x^B_1(p), x^B_2(p)) = (\frac{p_1+p_2}{p_1},0)\]
+Prices $\opp = (1, \frac{2}{3})$ and allocations $\opxa = (\frac{4}{3}, 2), \opxb=(\frac{5}{3}, 0)$ form a comptetitive equilibrium. \\
+
+\noindent
+By calculating slope of indifference curve, these allocations are \textbf{not} Pareto-efficient.\\
+In equilibrium, consumer $A$ consumes "too much" of good 2 relative to its impact on consumer $B$. Consumer $B$ is willing to exchange good 1 against reduction in consumption of good 2, but no market for this trade exists.\\
+
+\noindent
+\textbf{Establish a market for property right:}\\
+Competitive equilibrium:\\
+A competitive equilibrium consists of prices $\opp = (\oppo, \oppt, \oppr)$ and allocations $\opxa = (\opxoa, \opxta, \opxra)$ and $\opxb = (\opxob, \opxtb, \opxrb)$ which satisfy:
+\begin{enumerate}
+	\item Given price $\opp$, allocation $\opxa$ solves:
+		\[ \max_{x^A_1, x^A_2, x^A_R \geq 0} {x^A_1}^{\frac{1}{2}}{x^A_2}^{\frac{1}{2}} \text{ s.t. } \oppo x^A_1 + \oppt x^{A}_2 + \oppr x^A_R \leq 2\oppo + \oppt + \oppr\omega^A_R, \; x^A_2 \leq x^A_R
+	\]
+	Allocation $\opxb$ satisfies
+	\[ \max_{x^B_1, x^B_2, x^B_R \geq 0} {x^B_1}^{\frac{1}{2}}{x^B_R}^{\frac{1}{2}} \text{ s.t. } \oppo x^B_1 + \oppt x^{B}_2 + \oppr x^B_R \leq \oppo + \oppt + \oppr\omega^B_R, \; x^B_2 \leq x^B_R
+	\]
+	\item Allocations $\opxa$ and $\opxb$ clear all markets:
+	\[ x^{A\ast}_i + x^{B\ast}_i = \omega^A_i + \omega^B_i \text{ for all } i = 1, 2, R
+	\]
+\end{enumerate}
+Simplifying UMP:\\
+In any equilibrium, $\oppr >0$. If $\oppr = 0$, consumer $B$'s demand for rights is undefined. By the same argument, $\oppo>0$. \\
+In any equilibrium, $\oppt = 0$. If $\oppt > 0$, then we must have $\opxtb = 0$. By (MC2), $\opxta = 2$. Since $\opxta \leq \opxra$, we have $\opxra \geq 2$. By (MCR), $\opxra = 2$. Because $\oppo, \oppt > 0$, $\opxrb = 0$ is never optimal.\\
+
+\noindent
+In any equilibrium, $\opxta = \opxra$. $\opxta < \opxra $ cannot be optimal because $u^A$ is increasing in $x^A_2$ and $\oppt = 0$. \\
+Rewrite consumers' UMP:\\
+\[ \max_{x^J_1, x^J_R \geq 0} {x^J_1}^{\frac{1}{2}}{x^J_R}^{\frac{1}{2}} \text{ s.t. } \oppo x^J_1+ \oppr x^J_R \leq \oppo\omega^J + \oppr\omega^J_R
+\]
+Prices $\opp = (1, 0, \frac{3}{2})$ and allocations $\opxa = (1+\frac{3}{4}\omega^A_R, \frac{2}{3}+\frac{1}{2}\omega^A_R, \frac{2}{3}+\frac{1}{2}\omega^A_R), \opxb=(\frac{1}{2}+\frac{3}{4}\omega^B_R, \frac{1}{3}+\frac{1}{2}\omega^B_R, \frac{1}{3}+\frac{1}{2}\omega^B_R)$ form a comptetitive equilibrium.\\
+
+\noindent
+By calculating slope of indifference curve, these allocations are Pareto-efficient.\\
+Externalities create missing markets problem, but if property rights are established over externality, then welfare theorems apply.\\
+
+\noindent
+\textbf{Government intervention through permit system:}\\
+Government expropriates all endowments of good 2 in the economy and establish a permit system: to consume one unit of good 2, consumers need to pay cost $c>0$ for the permit. Assume that revenue is returned to consumers in equal shares. Then there is a competitive market for good 1 that determines its equilibrium price.\\
+Given permit price $c$, a competitive equilibrium is price $\oppo$, allocatioons $\opxa$ and $\opxb$ and per-capital tax return $T^{\ast}$ that satisfy:
+\begin{enumerate}
+	\item Given $\oppo$ and $c$, $\opxa$ is a solution to 
+	\[ \max_{x^A_1, x^A_2 \geq 0} {x^A_1}^{\frac{1}{2}}{x^A_2}^{\frac{1}{2}} \text{ s.t. } \oppo x^A_1 + c x^{A}_2 \leq 2\oppo + T^{\ast} 
+\]
+ $\opxb$ is a solution to 
+ \[ \max_{x^B_1, x^B_2 \geq 0} {x^B_1}^{\frac{1}{2}}{(2-x^A_2)}^{\frac{1}{2}} \text{ s.t. } \oppo x^B_1 + c x^{B}_2 \leq \oppo + T^{\ast} 
+ \]
+ \item $\opxoa + \opxob = 3$ (MC1)
+ \item Government's budget is balanced.\\
+ $2T^{\ast} = c(\opxta+\opxtb)$ (BB)
+\end{enumerate}
+Demand functions:\\
+\begin{align*}
+(x^A_1(p_1, c, T), x^A_2(p_1, c, T)) =& \big(\frac{2p_1+T}{2p_1}, \frac{2p_1+T}{2c}\big)\\
+(x^B_1(p_1, c, T), x^B_2(p_1, c, T)) =& \big(\frac{p_1+T}{p_1}, 0\big)
+\end{align*}
+Given $c$, price $\oppo=1$, tax return $T^{\ast} = \frac{2}{3}$ and allocations $\opxa = (\frac{4}{3}, \frac{4}{3c})$, $\opxb = (\frac{5}{3}, 0)$ form a competitive equilibrium. \\
+These allocations are Pareto-efficient only for a certain value of $c$ ($c=\frac{3}{2}$).
+\end{document}
