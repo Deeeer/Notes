@@ -1,0 +1,269 @@
+\documentclass[12pt]{article}
+
+\usepackage{fullpage, url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\lstset{%
+	language=C++,
+	keepspaces=true,
+	basicstyle=\small\ttfamily,
+	commentstyle=\footnotesize\itshape{},
+	identifierstyle=\slshape{},
+	keywordstyle=\bfseries,
+	numbers=left,
+	numberstyle=\tiny{},
+	numberblanklines=false,
+	inputencoding={utf8},
+	columns=fullflexible,
+	basewidth=.5em,
+	fontadjust=true,
+	tabsize=3,
+	emptylines=*1,
+	breaklines,
+	breakindent=30pt,
+	prebreak=\smash{\raisebox{-.5ex}{\hbox{\tiny$\hookleftarrow$}}},
+	escapeinside={//*}{\^^M} % Allow to set labels and the like in comments starting with //*
+}
+\renewcommand{\thesubsection}{Section \arabic{subsection}}
+\begin{document}
+\begin{center}
+	{\Large\bf University of Waterloo}\\
+	\vspace{3mm}
+	{\Large\bf CS 241 Winter 2018}\\
+	\vspace{3mm}
+	{\Large\bf Review}\\	
+\end{center}
+\noindent
+\textbf{Formal definition of DFA:}\\
+
+\noindent
+A DFA is a 5-tuple ($\Sigma, Q, q_0, A, \delta$) where:
+\begin{itemize}
+	\item finite alphabet $\Sigma$
+	\item finite set of states $Q$
+	\item start state $q_0 \in Q$
+	\item set of final/accepting states $A \subseteq Q$
+	\item transition function $\delta: Q \times \Sigma \rightarrow Q$
+\end{itemize}
+
+\noindent
+\textbf{Formal definition of NFA:}\\
+
+\noindent
+A NFA is a 5-tuple ($\Sigma, Q, q_0, A, T$) where:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item finite alphabet $\Sigma$
+	\item finite set of states $Q$
+	\item start state $q_0 \in Q$
+	\item set of final/accepting states $A \subseteq Q$
+    \item transition relation $T: Q \times \Sigma \rightarrow 2^Q$
+\end{itemize}
+For example, if $Q = \{A, B\}$, then $2^Q = \{\{ \epsilon \}, \{ A\}  ,\{B \}  ,\{ A, B\}  \}$. $|2^Q| = 2^Q$.
+
+\noindent
+NFA to DFA: subset construction\\
+
+\noindent
+$\epsilon$-NFA to NFA:
+\begin{enumerate}
+	\item take $\epsilon$ shortcuts; replace $\epsilon x$ with $x \;\forall x \in \Sigma$
+	\item pull back final states
+	\item remove $\epsilon$ transitionis
+	\item remove dead states (states that have no transitions into it)
+\end{enumerate}
+
+
+\clearpage
+\noindent
+\textbf{Regular expressions:}\\
+
+\noindent
+RE is 
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item $\emptyset$, or
+	\item $\epsilon$, or
+	\item $a$, where $a \in \Sigma$, or
+	\item $E_1E_2$ where $E_1, E_2$ are REs (series), or
+	\item $E_1|E_2$ where $E_1, E_2$ are REs (parallel), or
+	\item $E^{\ast}$ where $E$ is RE (feedback)
+\end{itemize}
+
+\noindent
+\textbf{Definition of Regular Language:}\\
+
+\noindent
+A regular language is a language which is
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item sepcified by a regular expression
+	\item recognized by an $\epsilon$-NFA
+	\item recognized by an NFA
+	\item recognized by a DFA
+\end{itemize}
+\vspace{2mm}
+\begin{minipage}{0.6\linewidth}
+	\textbf{Compilation:}
+	\begin{itemize}
+		\renewcommand\labelitemi{--}
+		\item Lexical analysis: scanning/tokenizing
+		\item Syntactic analysis: parsing
+		\item Context-sensitive (semantic) analysis
+		\item Synthesis (code generation)
+	\end{itemize}
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+	\includegraphics[width=\linewidth]{compilation.png}
+\end{minipage}
+
+
+\clearpage
+\noindent
+\textbf{Context-free grammar(CFG):}\\
+
+\noindent
+$G$: CFG\\
+$L(G)$: set of words specified by G(i.e. the language specified by G)\\
+$N$: finite set of non-terminals (non-ending)\\
+$T$: finite set of terminals (ending)\\
+$P$: finite set of production rules (rewriting rules)\\
+$S$: $S \in N$, start symbol\\
+
+\noindent
+We say that $\alpha A \beta$ directly derives $\alpha \gamma \beta$ if there exists a production rule $A \rightarrow \gamma$. Also called a \emph{derivation step}. \\
+We say that $\alpha A \beta$ derives $\alpha \gamma \beta$ if there exist two or more derivation steps such that \\
+$\alpha A \beta \rightarrow^{\ast} \alpha \gamma \beta$. \\
+
+\noindent
+Leftmost derivation: when there are 2 or more non-terminals in a derivation, we pick the leftmost non-terminal.\\
+Rightmost derivation: when there are 2 or more non-terminals in a derivation, we pick the rightmost non-terminal.\\
+
+\noindent
+\textbf{Ambiguity in CFGs:}\\
+
+\noindent
+A string $x$ is ambiguous if $x \in L(G)$ and there are more than one parse trees for $x$.\\
+A CFG $G$ is ambiguous if some word $w\in L(G)$ is ambiguous. \\
+A grammar is ambiguous if there is a word $x$ such that $x$ has 
+\begin{enumerate}
+	\item $\geq 2$ different parse trees, or
+	\item $\geq 2$ different leftmost derivations, or
+	\item $\geq 2$ different rightmost derivations
+\end{enumerate}
+left recursion: leftmost symbol of the RHS is the LHS ($E \rightarrow E + B$)\\
+right recursion: rightmost symbol of the RHS is the LHS ($ E \rightarrow B + E$)\\
+Related to associativity.\\
+
+\noindent
+\textbf{Top-down parsing with a stack:}\\
+
+\noindent
+Invariant: derivation = input already read + stack (stack is read from the top-down)\\
+Use a rule: pop the stack which has the LHS non-terminal, push RHS in reverse onto the stack.\\
+Accept the input when simultaneously stack and input are empty. \\
+The orcale: Predict($A, x$) = $A \rightarrow \alpha$\\
+$A$ is on top of the stack, and $x$ is the first symbol of input to be read. \\
+
+\noindent
+LL(1) Grammar:\\
+$\forall \text{ non-terminal } A \in N, x \in T, \; |\text{Predict}(A, x)| \leq 1$.\\
+L: Left-to-right input\\
+L: leftmost derivation\\
+1: one token of ``lookahead'' (in terms of input)\\
+
+\noindent
+Constructing a Predictor Table: form search trees (search until the first terminal symbol)
+Algorithm:\\
+$\alpha, \beta \in (N \cup T)^{\ast}, \; x, y \in T, A\in N$
+\begin{lstlisting}[mathescape=true, showstringspaces=false]
+Empty($\alpha$) = true if $\alpha \rightarrow^{\ast} \epsilon$ 
+// can $\alpha$ disappear?
+First($\alpha$) = $\{x \;|\; \alpha \rightarrow^{\ast} x\beta\}$ 
+// starting from $\alpha$, what can I generate as a first terminal symbol? 
+Follow($A$) = $\{y \;|\; S' \rightarrow^{\ast} \alpha Ay\beta\}$ 
+// starting from the start symbol, does the terminal $y$ ever appear following the non-terminal $A$?
+Predict($A,x$) = $\{A \rightarrow \alpha \;|\; x\in \text{First(}\alpha\text{)}\} \;\cup\; \{A \rightarrow \beta \;|\; x\in \text{Follow(}A\text{) and Empty(}\beta\text{)}  \}$
+\end{lstlisting}
+
+\noindent
+Algorithm for parsing:
+\begin{lstlisting}[mathescape=true, showstringspaces=false]
+Input: $w$
+Push $S'$
+for each $x\in w$
+	while(top of stack is some $A\in N$){
+		pop $A$
+		if Predict($A,x$) = $\{A \rightarrow \alpha\}$
+			push $\alpha$
+		else
+		    reject	
+	}
+	pop $c$
+	if $c \ne x$ reject
+end for
+accept $w$
+\end{lstlisting}
+\noindent
+\textbf{Bottom-up parsing with a stack:}\\
+stack + input to be read = current derivation (stack is read from bottom to top)\\
+shift: push\\
+reduce($A\rightarrow ab$): pop RHS, push LHS\\
+oracle: in the form of a DFA\\
+
+\noindent
+LR(0) $\epsilon$-NFA formal definition:\\
+Given a CFG $G = (N, T, P, S)$, construct an $ \epsilon$-NFA$(Q, N\cup T, q_0, F, D)$ as follows:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item $Q = \{A \rightarrow \alpha \bullet \beta | A \rightarrow \alpha\beta\in P \}$
+	\item $q_0 = \{S' \rightarrow \vdash \bullet S \dashv  \}$
+	\item $D[A\rightarrow \alpha \bullet X\beta, X] = \{A \rightarrow \alpha X\bullet \beta \}$
+	\item $D[A\rightarrow \alpha \bullet X\beta, \epsilon] = \{B \rightarrow \bullet\gamma|B\rightarrow\gamma\in P \}$
+	\item $F = \{S' \rightarrow \vdash S \bullet \dashv \}$
+\end{itemize}
+2 actions:\\
+If you have stack $K$ and input $a$, and $Ka$ is recognized, you can \textbf{shift}.\\
+If you have stack $K$ and input $a$, and the top of $K$ is a state containing $A \rightarrow \alpha\bullet$ and $a$ can follow $A$, \textbf{reduce} $A\rightarrow\alpha\bullet$.\\
+If more than one of these are defined, you have a \textbf{conflict}.\\
+
+\noindent
+Building an LR(0) automaton:\\
+An item is a production with a dot ($\bullet$) somewhere on the RHS (which indicates a partially completed rule).\\
+How to construct:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item make the start state the first rule, with the dot ($\bullet$) in front of the leftmost symbol of the RHS
+	\item for each state, label an arc with the symbol that follows $\bullet$ and advance the $\bullet$ one position to the right in the next state
+	\item if the $\bullet$ precedes a non-terminal, add all productions with that non-terminal on the LHS to the current state, with the $\bullet$ in the leftmost position
+\end{itemize}
+Using the automaton:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item If there is a transition out of our current state on the current input, then \emph{shift} (push) that input onto the stack
+	\item We know we can \emph{reduce} if the current state has only one item and the $\bullet$ is the rightmost symbol
+	\item To \emph{reduce}, pop the RHS off the stack, reread the stack (from the bottom-up), follow the transition for the LHS and push the LHS onto the stack
+\end{itemize}
+Conflict: shift-reduce, reduce-reduce\\
+If such conflicts are present, the grammar is not LR(0)\\
+Adding a lookahead token to the automaton fixes the conflict.\\
+For each $A \rightarrow \alpha$, attach Follow($A$).\\
+Increasing efficiency: store (state, input) on stack, and start the transducer at the top of the stack.\\
+
+\clearpage
+Outputting a derivation (parse tree):
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item Create a "tree stack"
+	\item Each time we reduce, pop the RHS nodes from tree stack
+	\item Push the LHS node and make its children the nodes we just popped
+\end{itemize}
+Traversing the tree twice:\\
+- Symbol table: variable values\\
+- Detect semantic errors\\
+Context-sensitive analysis:\\
+Input: variable names, procedure names, parse tree (syntactically valid)\\
+Output: ERROR if there are any context-sensitive errors; (decorated) parse tree otherwise
+\end{document}
