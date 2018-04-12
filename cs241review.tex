@@ -1,5 +1,5 @@
 \documentclass[12pt]{article}
-
+\usepackage{enumitem}
 \usepackage{fullpage, url}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -77,6 +77,16 @@ $\epsilon$-NFA to NFA:
 
 
 \clearpage
+\noindent
+\textbf{Scanning: the Simplified Maximal Munch Algorithm}\\
+\begin{enumerate}
+	\item Start at the start state of the scanning DFA.
+	\item Read characters until an error is reached or input is exhausted, keep tracking of the current state and the previous state. In addition, keep track of the characters read.
+	\item If the input is exhausted and the current state is an accepting state, emit the characters read as a token. Otherwise, signal an error in tokenizing.
+	\item If an error is reached and the previous state is an accepting state, emit the characters read (excluding the one that caused the error) as a token. Then resume from step 1 using the remaining input (starting at the character that caused the error) with both the current and previous states set to the start state of the scanning DFA. 
+\end{enumerate}
+
+
 \noindent
 \textbf{Regular expressions:}\\
 
@@ -265,5 +275,95 @@ Traversing the tree twice:\\
 - Detect semantic errors\\
 Context-sensitive analysis:\\
 Input: variable names, procedure names, parse tree (syntactically valid)\\
-Output: ERROR if there are any context-sensitive errors; (decorated) parse tree otherwise
+Output: ERROR if there are any context-sensitive errors; (decorated) parse tree otherwise\\
+
+\noindent
+\textbf{Selected problems from tutorials:}\\
+
+\noindent
+Write context-free grammars for the following languages:
+\begin{enumerate}[label=(\alph*)]
+	\item The language $L$ = \{my, name, is, inigo, montoya\}.\\
+	$S \rightarrow$ my\\
+	$S \rightarrow$ name\\
+	$S \rightarrow$ is\\
+	$S \rightarrow$ inigo\\
+	$S \rightarrow$ montoya
+	\item The language of all words over $\Sigma = \{a,b,c\}$ not beginning with $b$.\\
+	$S \rightarrow aA\\
+	S \rightarrow cA\\
+	A \rightarrow aA\\
+	A \rightarrow bA\\
+	A \rightarrow cA\\
+	A \rightarrow \epsilon\\
+	S \rightarrow \epsilon$
+	\item The language defined by the regular expression $(0|1)^{\ast}((00)^{\ast}1)^{\ast}010$.\\
+	$S \rightarrow AB010\\
+	A \rightarrow 0A\\
+	A \rightarrow 1A \\
+	A \rightarrow \epsilon\\
+	B \rightarrow C1B\\
+	B \rightarrow \epsilon\\
+	C \rightarrow 00C\\
+	C \rightarrow \epsilon\\	
+	$
+	\item The language $L=\{a^n b^n c^m d^m:\;n,m\in \mathbb{N} \}$, where $a^n$ means ``$n$ copies of $a$ in a row".\\
+	$S \rightarrow AB\\
+	A \rightarrow aAb\\
+	A \rightarrow \epsilon\\
+	B \rightarrow cBd \\
+	B \rightarrow \epsilon$
+	\item The language of palindromes over $\Sigma=\{a, b\}$. \\	
+	$
+	S \rightarrow a\\
+	S \rightarrow b\\
+	S \rightarrow \epsilon\\
+	S \rightarrow aSa\\
+	S \rightarrow bSb\\
+	S \rightarrow \epsilon$
+    \end{enumerate}
+\clearpage
+\noindent
+\textbf{Not on final but interesting stuff:}\\
+
+\noindent
+LR(1) but not LALR(1) and not SLR(1):\\
+$ S \rightarrow AaBa\\
+S \rightarrow BbAb\\
+A \rightarrow c\\
+B \rightarrow c\\
+$ After building the LR(0) state set for this grammar, get:\\
+$A \rightarrow c\\
+B \rightarrow c\\
+$ The SLR(1) construction uses the follow set for $A$, $\{a,b\}$, to determine whether to reduce $A \rightarrow c$ and the follow set for $B$, $\{a, b\}$, to determine whether to reduce $B\rightarrow c$. Since these sets intersect there's a reduce/reduce conflict. \\
+LR(1) is clever enough to build two different states, one containing\\
+$A \rightarrow c \;\{a\}$\\
+$B \rightarrow c \;\{b\}$\\
+and the other containing \\
+$A \rightarrow c \;\{b\}\\
+B \rightarrow c \;\{a\}$\\
+
+\noindent
+LR(1) and LALR(1) but not SLR(1):\\
+$S \rightarrow AaBa\\
+S \rightarrow BbAb\\
+S\rightarrow c\\
+A \rightarrow c\\
+B \rightarrow c\\$
+For LALR(1), get states:\\
+$A\rightarrow c\\
+B \rightarrow c\\$
+and\\
+$A\rightarrow c\\
+B\rightarrow c\\
+S\rightarrow c\\$
+If you look at the grammar carefully, you'll see that the only reductions that make sense are:\\
+$A\rightarrow c \;\{b\}\\
+B \rightarrow c \;\{a\}\\$
+and \\
+$A\rightarrow c \;\{a\}\\
+B \rightarrow c\;\{b\}\\
+S \rightarrow c$ \{EOF\}\\
+But SLR(1) is not powerful enough to make this inference as it uses the same lookahead set for each reduce action, irrespective of the state that it occurs in.
+
 \end{document}
