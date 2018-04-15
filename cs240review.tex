@@ -1,0 +1,655 @@
+\documentclass[12pt]{article}
+\usepackage{enumitem}
+\usepackage{fullpage, url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\lstset{%
+	language=C++,
+	keepspaces=true,
+	basicstyle=\small\ttfamily,
+	commentstyle=\footnotesize\itshape{},
+	identifierstyle=\slshape{},
+	keywordstyle=\bfseries,
+	numbers=left,
+	numberstyle=\tiny{},
+	numberblanklines=false,
+	inputencoding={utf8},
+	columns=fullflexible,
+	basewidth=.5em,
+	fontadjust=true,
+	tabsize=3,
+	emptylines=*1,
+	breaklines,
+	breakindent=30pt,
+	prebreak=\smash{\raisebox{-.5ex}{\hbox{\tiny$\hookleftarrow$}}},
+	escapeinside={//*}{\^^M} % Allow to set labels and the like in comments starting with //*
+}
+\renewcommand{\thesubsection}{Section \arabic{subsection}}
+\newcommand{\la}{\leftarrow}
+\newcommand{\vis}{\textvisiblespace}
+\begin{document}
+\begin{center}
+	{\Large\bf University of Waterloo}\\
+	\vspace{3mm}
+	{\Large\bf CS 240 Winter 2018}\\
+	\vspace{3mm}
+	{\Large\bf Review}\\	
+\end{center}
+
+{\parindent0pt
+
+\textbf{Theorem: }Any comparison based implementation of size$-n$ ADT dictionary requires $\Omega(\log n)$ comparison for some search operations. \\
+\textbf{Proof:} Any algorithm defines a binary decision tree with comparisons at the nodes and actions at the leafs. There are at least $n+1$ answers: returning an item or "not found". Therefore, the decision tree has at least $n+1$ leaves, and the height is $\Omega(\log n)$. This implies that some leaf is at level $\log(n)$ or lower, and the input that led to this answer requires $\Omega(\log n)$ comparison. \\
+
+
+{\Large\bf Hashing}\\
+
+
+Definition: The load factor of a hash table is 
+\[\alpha := \frac{n}{M} = \frac{\text{\# of keys}}{\text{size of table}} \]
+We can choose $M$ $\implies $ We can choose $\alpha$. \\
+
+
+\textbf{Hashing with chaining:}\\
+Assuming uniform hashing, average bucket size is exactly $\alpha$. \\
+Analysis of operations and space:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item search: $\Theta(1+\alpha)$ average-case, $\Theta(n)$ worst-case
+	\item insert: $O(1)$ worst-case since we always insert at the front
+	\item delete: same as search: $\Theta(1+\alpha)$ average-case, $\Theta(n)$ worst-case
+	\item space: $O(M)$, we can keep it at $\Theta(n)$ through rehashing
+\end{itemize}
+If we maintain $M \in \Theta(n)$, then average costs are all $O(1)$. This can be accomplished by rehashing whenever $n < c_1M $ or $n > c_2M$, for some constatns $c_1, c_2$ with $0< c_1 < c_2$. \\
+
+
+Rehashing:\\
+We start with some small $M$. \\
+During insert/delete, keep track of $n, M, \alpha$. \\
+If $\alpha$ gets "too big", say $\alpha > \frac{1}{2}$, 
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item create a new table, size = $M' \geq 2M$
+	\item find a new hash-function $h': U \rightarrow \{0,\dots, M'-1  \}$
+	\item create a new hash-table $T'[0\dots M'-1]$
+	\item for each item in old hash-table $T$, insert it in the new hash-table $T'$
+\end{itemize}
+Complexity: $O(M' + n \cdot \text{insert})$\\
+Since new $\alpha$ is small, every insert should be fast, i.e. $O(1)$. Rehashing happens rarely so we will not count this time towards the insertion time (amortized analysis). \\
+
+
+\textbf{Open addressing with probe sequence:}\\
+%$\langle x \rangle$
+
+For each key $k$, we have a probe sequence $\langle h(k, 0), h(k,1),h(k,2),\dots\rangle$. To insert, try each value in the probe sequence. \\
+Possible probe sequences:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item Linear probing: $h(k,i) = (h(k)+i) \mod M$
+	\item Quadratic probing: $h(k,i) = (h(k) + c_1i+c_2i^2) \mod M$
+	\item Double hashing: $h(k,i) = (h_1(k) + i\cdot h_2(k)) \mod M$ where $h_2(k) \ne 0$ for any $k$, assuming we have 2 \emph{independent} hash functions $h_1, h_2$.\\ Note: to get valid probe sequences, we need $\gcd(h_2(k), M) = 1 \implies $ choose $M$ prime
+\end{itemize}
+Deletiton:\\
+We cannot leave an empty spot behind as the next search might otherwise not go far enough. We can use \emph{lazy deletion}: mark the item as ``deleted", then adjust insert/search to deal with deleted keys. \\
+
+\textbf{Open addressing with cuckoo hashing:}\\
+An item with key $k$ can only be in $T[h_1(k)]$ or $T[h_2(k)]$, assuming we have two hash functions $h_1: U \rightarrow \{0,\dots, M-1  \}, $ $h_2: U \rightarrow \{0,\dots, M-1  \}$. Search and delete therefore take $O(1)$ time. \\
+Insertion:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item Always try $h_1$ first.
+	\item If $T[h_1(k)]$ is occupied: ``kick out" the other item, which we then attempt to re-insert into its alternate position. 
+	\item Safety check: loop at most $n$ times to avoid an infinite loop of ``kicking out".
+	\item In case of failure, rehash with a larger $M$ and new hash functions.
+\end{itemize}
+\begin{lstlisting}[mathescape=true]
+cuckoo-insert(T, x):
+// T: hash table, x: new item to insert
+y $\rightarrow$ x, i $\rightarrow h_1$(x.key)
+do at most n times:
+	swap(y, T[i])
+	if y is "empty" then return "success"
+	// swap i to be the other hash-location
+	if i = $h_1$(y.key) then i $\rightarrow h_2$(y.key)
+	else i $\rightarrow h_1$(y.key)
+return "failure"
+\end{lstlisting}
+
+Can show: if $\alpha = \frac{n}{M} < \frac{1}{2} - \epsilon$, then insert has $O(1)$ expected run-time. \\
+
+\textbf{Choosing hash functions:}
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item easy to compute
+	\item avoid patterns in data
+	\item depend on all parts of the key
+\end{itemize}
+Modular method: $h(k) = k \mod M$, where $M$ is prime\\
+Multiplication method: $h(k) = \lfloor M(kA - \lfloor kA\rfloor)\rfloor$, for some constant floating-point number $A$ with $0< A < 1$. Knuth suggests $A = \frac{\sqrt{5}-1}{2} \approx 0.618$.\\
+
+Universal hashing: randomization to avoid bad input\\
+On start up, and when rehashing, do:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item find a prime number $P$ that is $\approx$ the desired table size
+	\item randomly choose $a, b\in \{0,\dots, P-1 \}, a\ne 0$
+	\item use as hash function $h(k) = (ak+b) \mod P$ in a table of size $P$
+\end{itemize}
+
+\textbf{Hashing vs. Balanced Search Trees:}\\
+Advantages of Balanced Search Trees:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item $O(\log n)$ worst-case operation cost
+	\item Does not require any assumptions, special functions, or known properties of input distribution
+	\item Predictable space usage (exactly $n$ nodes)
+	\item Never need to rebuild the entire structure
+	\item supports ordered dictionary operations (rank, select etc.)
+\end{itemize}
+Advantages of Hash Tables:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item $O(1)$ operations if hashes well-spread and load factor small
+	\item We can choose space-time tradeoff via load factor
+	\item Cuckoo hashing achieves $O(1)$ worst-case for search and delete
+\end{itemize}
+
+\clearpage
+{\Large\bf Range-Searching in Dictionaries for Points}\\
+
+\textbf{Range Search Query:}\\
+Multi-dimensional data: each item has $d$ aspects, and aspect values are numbers. Each item corresponds to a point in $d$-dimensional space. \\
+
+\textbf{Quadtrees}\\
+Assume: All points are within a sqaure $R$, ideally the width/height of $R$ is a power of 2.\\
+How to build the quadtree on $S = \{(x_0, y_0), (x_1,y_1),\dots, (x_{n-1}, y_{n-1}) \}$:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item Root $r$ of the quadtree corresponds to $R$
+	\item If $R$ contains 0 or 1 point(s), then root $r$ is a leaf that stores point
+	\item Else split: Partition $R$ into four equal subsquares (quadrants) $R_{NE}, R_{NW}, R_{SW}, R_{SE}$
+	\item Root has four children $v_{NE}, v_{NW}, v_{SW}, v_{SE}$; $v_i$ is associated with $R_i$
+	\item Recursively repeat this process at each child
+\end{itemize}
+Rules: Points on split lines belong to \textbf{top/right} side. We could delete leaves without point (but then need edge labels).\\
+
+Quadtree Dictionary Operations:\\
+Insert: search for the point, split the leaf if there are two points.\\
+Delete: search for the point, remove the point, if its parent has only one child left, delete that child and continue the process toward the root.\\
+
+Quadtrees are similar to tries:\\
+point coordinates = bit strings (binary number, padded to same length)\\
+On level $i$, we split by $i$th bit of both $x$-coordinate and $y$-coordinate. (still 4 children)\\
+
+Quadtree Range Search: 4 cases
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item $R \subseteq A$: All points are in subtree
+	\item $R \cap A$ is empty: no points in subtree
+	\item Leaf: subtree only has one point
+    \item can't decide: delegate to children (recursion)
+\end{itemize}
+\begin{lstlisting}[mathescape=true]
+QTree-RangeSearch(T, A):
+// T: the root of a quadtree, A: query rectangle 
+let R be the rectangle associate with T
+if (R $\subseteq$ A) then 
+	report all points in T; return
+if (R $\cap$ A is empty) then
+	return
+if(T stores a single point p) then
+	if p is in A return p
+	else return
+for each child v of T do:
+	QTree-RangeSearch(v, A)
+\end{lstlisting}
+
+Quadtree Analysis:\\
+spread factor of points $S$: $\beta(S) = \frac{\text{sidelength of R}}{d_{\min}}$, where $d_{\min}$ is the minimum distance between two points in $S$\\
+height of quadtree: $h \in \Theta(\log \beta(S))$\\
+Complexity to build initial tree: $\Theta(nh)$ worst-case\\
+Complexity of range search: $\Theta(nh)$ worst-case even if the answer is $\emptyset$. In practice it is much faster.\\
+Space is potentially wasteful, but not if points are well-distributed\\
+
+\textbf{kd-trees}\\
+(Point-based) kd-tree idea: Split the region such that (roughly) half the points are in each subtree \\
+Each node of the kd-tree keeps track of a splitting line in one dimension (2D: either vertical or horizontal)\\
+Continue splitting, switching between vertical and horizontal lines, until every point is in a separte region\\
+Tie-breaking: points on splitting lines go to \textbf{bottom/left}\\
+
+Assume first that no two points have the same $x$-coordinate or $y$-coordinate. Then the split always put $\lfloor \frac{n}{2} \rfloor$ points on one side and $\lceil \frac{n}{2} \rceil$ points on the other, so height $h(n)$ satisfies the recursion $h(n) \leq h(\lceil \frac{n}{2} \rceil) + 1$. This resolves to $h(n) \leq \lceil \log(n) \rceil$. \\
+
+Constructing kd-trees:\\
+Build kd-tree with initial split for $x$ (vertical line) on points $S$:
+\begin{itemize}
+    \renewcommand\labelitemi{--}
+	\item If $|S| \leq 1$ create a leaf and return
+	\item Else find median $X$ of $x$-coordinates in S
+	\item Partition $S$ into $S_{x\le X}$ and $S_{x>X}$ by comparing points' $x$-coordinate with $X$
+	\item Create left child with recursive call (splitting on $y$) for points $S_{x\leq X}$
+	\item Create right child with recursive call (splitting on $y$) for points $S_{x>X}$
+\end{itemize}
+Analysis:\\
+Find median and partition in linear time.\\
+$\Theta(n)$ work on each level in the tree (summed over all nodes)\\
+Total is $\Theta(\text{height}\cdot n) = \Theta(n \log n)$.\\
+
+\begin{lstlisting}[mathescape=true, showstringspaces=false]
+kdTree-RangeSearch($T, R, A$):
+// $T$: the root of a kd-tree, $R$: region associated with T, $A$: query rectangle
+if ($R \subseteq A$) then report all points in T; return
+if ($R \cap A$ is empty) then return
+if ($T$ stores a single point $p$) then
+	if $p$ is in $A$ return $p$
+	else return
+if $T$ stores split "is $x \leq X$"?
+	$R_\ell \la R \cap \{(x,y): x\leq X \}$ 
+	$R_r \la R \cap \{(x,y): x > X \}$ 
+	kdTree-RangeSearch($T$.left, $R_\ell, A$)
+	kdTree-RangeSearch($T$.right, $R_r, A$)
+else // root node splits by $y$-coordinate
+    ...
+\end{lstlisting}
+
+kd-tree Analysis:\\
+The complexity is $O(s + Q(n))$ where\\
+- $s$ is the number of keys reported (output-size)\\
+- $s$ can be anything from 0 to $n$\\
+- No range-search can work in $o(s)$ time since it must report the points\\
+- $Q(n)$ is the number of nodes for which \texttt{kdTreeRangeSearch} was called\\
+- can show: $Q(n)$ satisfies the following recurrence relation: $Q(n) \leq 2Q(\frac{n}{4}) + O(1)$, which resolves to $Q(n) \in O(\sqrt(n))$. \\
+Therefore, the complexity of range search in kd-trees is $O(s+\sqrt{n})$.\\
+
+kd-tree: d-dimensional space:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item At the root the point set is partitioned based on the first coordinate
+	\item At the children of the root the partition is based on the second coordinate
+	\item At depth $d-1$ the partition is based on the last coordinate
+	\item At depth $d$ we start all over again, partitioning on first coordinate
+\end{itemize}
+Storage: $O(n)$\\
+Construction time: $O(n \log n)$\\
+Range query time: $O(s + n^{1-\frac{1}{d}})$\\
+This assumes that $o(n)$ points share coordinates and $d$ is a constant.\\
+
+\textbf{Range Trees:}
+\begin{lstlisting}[mathescape=true]
+BST-RangeSearch($T,k_1,k_2$):
+	// $T$: root of a bst, $k_1,k_2$: search keys
+    // returns keys in T that are in range $[k_1,k_2]$
+    if $T$ = null then return
+    if $k_1 \leq $ key($T$) $\leq k_2$ then 
+    	$L \la$ BST-RangeSearch($T$.left,$k_1,k_2$)
+    	$R \la $ BST-RangeSearch($T$.right,$k_1,k_2$)
+    	return $L \cup \{\text{key}(T)\} \cup R$
+    if key($T$) < $k_1$ then
+    	return BST-RangeSearch($T$.right,$k_1,k_2$)
+    if key($T$) > $k_2$ then
+    	return BST-RangeSearch($T$.left,$k_1,k_2$)
+\end{lstlisting}
+This results in unnecessary searches.\\
+Rephrase:\\
+Search for left boundary $k_1$ giving path $P_1$, for right boundary $k_2$ giving path $P_2$. \\
+Partition nodes of $T$ into 3 groups: 
+\begin{enumerate}
+	\item boundary nodes: nodes in $P_1$ or $P_2$
+    \item inside nodes: nodes that are right of $P_1$ and left of $P_2$
+    \item outside nodes: nodes that are left of $P_1$ and right of $P_2$
+\end{enumerate}
+Report all inside nodes, then test each boundary node and report it if it is in range. \\
+
+Analysis:\\
+Assuming that the binary search tree is balanced, then search for both paths take $O(\log n)$ time. There are $O(\log n)$ boundary nodes, but could have many inside nodes.\\
+We only need the topmost of them: allocation node $v$ that satisfies
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item not in $P_1$ or $P_2$, but parent is in $P_1$ or $P_2$ but not both
+	\item if parent is in $P_1$, then $v$ is right child
+	\item  if parent is in $P_2$, then $v$ is left child
+\end{itemize}
+There are $O(\log n)$ allocation nodes; for each of them report all descendants. \\
+Run-time: $O$(\# boundary nodes + \# reported points) = $O(\log n + s)$\\
+
+2-dimensional Range Trees:\\
+We have $n$ points $P= \{(x_0,y_0),(x_1,y_1), \dots, (x_{n-1}, y_{n-1}) \}$\\
+A range tree is a tree of trees (multi-level data structure)\\
+\emph{Primary structure}: binary search tree $T$ that stores $P$ and sorted by $x$-coordinate\\
+Each node $v$ of $T$ has an auxiliary structure $T(v)$: \\
+ - Let $P(v)$ be all points at descendants of $v$ in $T$ (including $v$)\\
+- $T(v)$ stores $P(v)$ in a binary search tree, sorted by $y$-coordinate\\
+ - $v$ is not necessarily the root of $T(v)$\\
+
+Space analysis:\\
+Primary tree uses $O(n) $ space, associate tree $T(v)$ uses $O(|P(v)|)$ space.\\
+$w\in P(v)$ means that $v$ is an ancestor of $w$ in $T$.\\
+- Every node has $O(\log n)$ ancestors in $T$\\
+- Every node belongs to $O(\log n)$ sets $P(v)$\\
+- So $\Sigma_v|P(v)| \leq n \cdot O(\log n)$\\
+Range tree space usage: $O(n\log n)$\\
+
+Insert: first, insert point by $x$-coordinate into $T$. Then, walk back up to the root and insert the point by $y$-coordinate in al $T(v)$ of nodes $v$ on path to the root. \\
+
+To perform a range search query $A = [x_1,x_2] \times [y_1,y_2]$:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item Perform a range search (on the $x$-coordinates) for the interval $[x_1,x_2]$ in primary tree $T$ (BST-RangeSearch($T,x_1,x_2$))
+	\item Obtain boundary, topmost outside and allocation nodes as before
+	\item For every allocation node $v$, perform a range search on the $y$-coordinates for the interval $[y_1,y_2]$ in $T(v)$
+	\item For every boundary node, test to see if the corresponding point is within the region $A$
+\end{itemize}
+Query Run-time:\\
+$O(\log n)$ time to find boundary and allocation nodes in primary tree.\\
+There are $O(\log n)$ allocation nodes.\\
+$O(\log n + s_v)$ time for each allcation node $v$, where $s_v$ is the number of points in $T(v)$ that are reported\\
+Every point is reported in exactly one auxiliary structure, so $\Sigma s_v = s$\\
+Hence the time for range-query in range tree is $O(s + \log^2 n)$.\\
+
+For d-dimensional space:\\
+- storage: $O(n(\log n)^{d-1})$\\
+- construction time: $O(n(\log n)^{d-1})$\\
+- range query time: $O(s + (\log n)^d)$\\
+
+\textbf{Summary:}\\
+
+Quadtrees:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item simple
+	\item work well only if points are well distributed
+	\item wastes space for higher dimensions
+\end{itemize}
+kd-trees:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item linear space
+	\item query time $O(\sqrt{n})$
+	\item inserts/deletes destroy balance
+	\item care needed for duplicate coordinates
+\end{itemize}
+range trees:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item fastest range search $O(\log^2 n)$
+	\item wastes more space
+	\item insert and delete more complicated
+\end{itemize}
+
+{\Large\bf String Matching}\\
+
+\textbf{DFA}\\
+
+Matching time on a text stirng of length $n$ is $\Theta(n)$.\\
+Preprocessing can clearly be done in $O(m^3|\Sigma|)$ time, but there exists an algorithm to do it in $O(m|\Sigma|)$ time.\\
+Altogether it has run-time $O(m|\Sigma|+n)$. \\
+
+\textbf{Knuth-Morris-Pratt(KMP) Algorithm}\\
+Use a new type of transition $\times$ ("failure") only if no other fitsl. It does \emph{not} consume a character. Even though computations of this automaton are deterministic, it is formally not a valid DFA (pseudo-DFA).\\
+Stores failure-function in an array $F[0\dots m-1]$. The failure arc from state $j$ leads to $F[j-1]$. 
+\begin{lstlisting}[mathescape=true]
+KMP(T,P), to return the first match
+// T: String of length n (text), P: string of length m (pattern)
+F $\la$ failureArray(P)
+i $\la$ 0 // current character of T to parse
+j $\la$ 0 // current state that we are in 
+while i < n do:
+	if P[j] = T[i] then
+		if j = m - 1 then
+			return i - m + 1 //match
+		else
+			i $\la$ i + 1
+			j $\la$ j + 1
+	else // P[j] $\ne$ T[i]
+		if j > 0 then
+			j $\la$ F[j-1]
+		else
+			i $\la$ i + 1
+return FAIL // no match
+\end{lstlisting}
+$F[j]$ is the length of the longest prefix of $P[0\dots j]$ that is a suffix of $P[1\dots j]$. Can be computed in $\Theta(m)$ time. \\
+
+KMP run-time analysis:\\
+At each iteration of the while loop, at least one of the following happens:\\
+1. $i$ increases by one, or\\
+2. the index $i-j$ increases by at least one ($F[j-1] < j$)\\
+There are no more than $2n$ iterations of the while loop\\
+Running time: $\Theta(n+m)$\\
+
+\textbf{Boyer-Moore Algorithm}\\
+
+Ideas:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item Reverse-order searching: compare $P$ with a subsequence of $T$ moving backwards
+	\item Bad character jumps: When a mismatch occurs at $T[i] = c$, use location of $c$ in $P$ (if any) to eliminate guesses
+	\item Good suffix jumps: When a mismatch occurs, then use recently seen suffix to $P$ to eliminate guesses (Similar to failure arrays in KMP)
+\end{itemize} 
+\begin{lstlisting}[mathescape=true]
+BoyerMoore(T,P):
+	L $\la$ last occurence array computed from P
+	S $\la$ good suffix array computed from P
+	k $\la$ 0 // current guess
+	while k $\leq$ n - m:
+		i $\la$ k + m - 1, j $\la$ m - 1
+		while j $\geq $ 0 and T[i] = P[j] then
+			i $\la$ i - 1
+			j $\la$ j - 1
+		if j = -1 return k
+		else
+			k $\la$ k + max(1, j-L[T[i]], m-1-S[j])
+	return FAIL
+\end{lstlisting}
+Last occurrence Function: $L(c)$ is defined as the largest index $i$ such that $P[i]  = c$ or -1 if no such index exists.\\
+Good suffix array: $S[j]$ is the maximum index $\ell$ such that 
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item $P[j+1\dots m-1]$ is a suffix of $P[0\dots\ell]$ and $P[j]\ne P[\ell-m+j+1]$, or
+	\item $P[0\dots\ell]$ is a suffix of $P[j+1,\dots,m-1]$, or
+	\item -1 if neither of the above holds
+\end{itemize}
+Boyer-Moore Run-time analysis:\\
+Worst-case running time $\in O(n+m+|\Sigma|)$ if $P$ is not in $T$.\\
+
+\textbf{Rabin-Karp Fingerprint Algorithm}\\
+Idea: compute hash function for each text position, then compare with pattern hash. If a match of the hash value of the pattern and a text position found, then compares the pattern with the substring by naive approach. \\
+To improve run-time: use a rolling hash function.\\
+We can compute $h(T[k+1\dots k+m])$ from $h(T[k\dots k+m-1])$ in constant time. 
+\begin{align*}
+ h(T[k\dots k+m-1]) &= (\sum_{i=0}^{m}T[k+i]\cdot 10^{m-1-i}) \mod M\\
+h(T[k+1\dots k+m]) &= ((h(T[k\dots k+m-1]) - T[k]\cdot 10^{m-1}  ) \cdot 10 + T[k+m])
+\end{align*}
+Overall expected run-time: $O(m+n)$\\ 
+Worst-case run-time: $O(mn)$ but highly unlikely\\
+
+\textbf{Tries of suffixes and suffix trees}\\
+
+If we want to search for many pattens $P$ within the same fixed text $T$, we should preprocess $T$ instead. \\
+Observation: $P$ is a substring of $T$ if and only if $P$ is a prefix of some suffix of $T$. \\
+Suffix tree: a compressed trie storing all suffixes of $T$ as indices. Can be built in $\Theta(n)$ time. \\
+
+Pattern matching:\\
+Assume that $P$ does not have \$. \\
+In the suffix tree, search for $P$ until one of the following occurs:
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item If search fails due to ``no such child" then $P$ is not in $T$
+	\item If we reach end of $P$, say at node $v$, then jump to leaf $\ell$ in subtree of $v$, presuming that suffix trees stores such shortcuts (need to check since it is compressed)
+	\item Else we reach a leaf $\ell=v$ while characters of $P$ left
+\end{itemize}
+Either way, left index at $\ell$ gives the shift we should check. This takes $O(|P|)$ time. \\
+
+Analysis:\\
+Run-time: $\Theta (m)$\\
+Space: $\Theta(n)$ since we store only indices\\
+
+\begin{tabular}{c|c|c|c|c|c}
+	& Brute force & Rabin Karp & KMP & Boyer-Moore & Suffix trees\\
+	\hline
+	preprocessing & & $\Theta(m)$ & $\Theta(m)$ & $\Theta(m+|\Sigma|)$ &$\Theta(n)$\\
+	\hline
+	search time & $\Theta(mn)$ & $\Theta(n+m)$(exp) & $\Theta(n)$ & $\Theta(n)$& $\Theta(m)$\\
+	\hline
+	extra space & & $O(1)$ & $\Theta(m)$ & $\Theta(m+ |\Sigma|)$ & $\Theta(n)$ \\
+	\hline
+	When to use &$m$ small & \multicolumn{3}{c}{searching for same $P$} \vline & searching for many $P$\\
+	& or close to $n$ &  \multicolumn{3}{c}{in many different texts} \vline & in the same text
+	
+\end{tabular}
+\\
+
+{\Large\bf Compression}\\
+
+\textbf{Encoding}\\
+
+Have: source text $S$ over alphabet $\Sigma_S$,\\
+Want: convert $S$ into new text $C$ over $\Sigma_C$ (usually \{0,1\}) such that $C$ is smaller\\
+compression ratio = 
+\[\frac{|C| \cdot \log|\Sigma_C|}{|S| \cdot \log|\Sigma_S|}\]
+
+Character-by-character encoding:\\
+Map each character from the source alphabet to a string in coded alphabet. \\
+$E: \Sigma_S \rightarrow \Sigma^{\ast}_C$\\
+For $c\in\Sigma_S$, we call $E(c)$ the codeword of $c$.\\
+Fixed-length code: All codewords have the same length (e.g. ASCII). \\
+
+The decoding algorithm must map $\Sigma^{\ast}_C$ to $\Sigma^{\ast}_S$. \\
+The code must be \emph{uniquely decodable}. From now on, we only consider prefix-free codes $E$:\\
+$E(c)$ is not a prefix of $E(c')$ for any $c, c' \in \Sigma_S$.\\
+A prefix-free code naturally corresponds to a trie with characters of $\Sigma_S$ only at the leaves. \\
+
+\textbf{Huffman's Algorithm}
+\begin{enumerate}
+	\item Determine frequency of each character $c\in \Sigma$ in $S$.
+	\item For each $c\in\Sigma$, create a height-0 trie holding $c$.
+	\item Assign a "weight" to each trie: sum of frequencies of all letters in trie. Initially, these are just the character frequencies.
+	\item Find the two tries with the minimum weight.
+	\item Merge these tries with new interior node; new weight is the sum. (corresponds to adding one bit to the encoding of each character)
+	\item Repeat steps 4-5 until there is only 1 trie left; this is $D$.
+\end{enumerate}
+Use a min-oriented heap to make this efficient. \\
+
+Run-time analysis:\\
+Encoding:
+$O(n+|\Sigma_S|\log|\Sigma_S| + |D| + n) \in O(n+|\Sigma_S|\log|\Sigma_S|)$\\
+Decoding is faster; asymmetric scheme.\\
+The constructed trie is optimal in the sense that $C$ is shortest (among all prefix-free character-encodings with $\Sigma_C=\{0,1\}$). \\
+
+\textbf{Run-Length Encoding (RLE)}
+\begin{itemize}
+	\renewcommand\labelitemi{--}
+	\item Give the first bit of $S$ (either 0 or 1)
+	\item Then give a sequence of integers indicating run lengths
+\end{itemize}
+
+Prefix-free Encoding for Integers:\\
+Encode the length of $k$ in unary, followed by the actual value of $k$ in binary.\\
+The binary length of $k$ is len($k$) = $\lfloor\log k\rfloor + 1$. Since $k\geq 1$, we will encode len($k$)-1, which is at least 0.\\
+The prefix-free encoding of the positive integer $k$ is in two parts:\\
+1. $\lfloor\log k\rfloor$ copies of 0, followed by\\
+2. The binary representation of $k$ which always start with 1\\
+
+\textbf{Lempel-Ziv-Welch (LZW) Compression}\\
+
+Fixed-width encoding using $k$ bits. First $|\Sigma_S|$ entries are for single characters, remaining entries involve \emph{multiple} characters.\\
+Encoding: after encoding a substring $x$ of $S$, add $xc$ to $D$ where $c$ is the character that follows $x$ in $S$.\\
+Decoding: after decoding a substring $y$ of $S$, add $xc$ to $D$, where $x$ is previously encoded/decoded substring of $S$, and $c$ is the first character of $y$.
+\begin{lstlisting}[mathescape=true]
+LZW-encode(S):
+// S: stream of characters
+w $\la$ NIL
+C $\la$ empty string
+while there is input in S do
+	K $\la$ next symbol from S
+	if wK exists in the dictionary
+		w $\la$ wK
+	else
+		C.append(index(w))
+		add wK to the dictionary
+		w $\la$ K
+C.append(index(w))
+return C
+\end{lstlisting}
+Generally, decoder is "one step behind" in creating dictionary, so problem occurs if we want to use a code that we're about to build. However, there is enough information about what is going on.\\
+Suppose we are seeing code-number $k$ at the time that we are assigning $k$. Decoder knows $s_{prev}$ (decoded in previous step), and wants $s$ (what $k$ decodes to). We know that the encoder assigns $k$ to $s_{prev} + s[0]$, and also that $s[0] = $ first character of what $k$ decodes to. Therefore $s = s_{prev} + s_{prev}[0]$.
+\begin{lstlisting}[mathescape=true]
+LZW-decode(C):
+// C: stream of integers
+D $\la$ dictionary that maps \{0,...,127\} to ASCII
+idx $\la$ 128
+S $\la$ empty string
+code $\la$ first code from C
+s $\la$ D(code); S.append(s)
+while there are more codes in C do:
+	s$_{prev}$ $\la$ s
+	code $\la$ next code of C
+	if code = idx
+		s $\la$ s$_{prev}$+s$_{prev}$[0]
+	else
+		s $\la$ D(code)
+	S.append(s)
+	D.insert(idx,  s$_{prev}$+s[0])
+	idx++
+return S
+\end{lstlisting}
+
+\textbf{Summary}\\
+
+\begin{tabular}{c|c|c}
+	\textbf{Huffman} & \textbf{Run-length encoding} & \textbf{Lempel-Ziv-Welch}\\
+	\hline
+	variable-length & variable-length & fixed-length\\
+	\hline
+	single-character & multi-character & multi-character\\
+	\hline
+	2-pass & 1-pass & 1-pass \\
+	\hline
+	60\% compression  & bad on text & 45\% compression\\
+	on English text & & on English text\\
+	\hline
+	optimal 01-prefix-code & good on long runs & good on English text\\
+	\hline
+	must send dictionary & can be worse than ASCII &  can be worse than ASCII\\
+	\hline
+	rarely used directly & rarely used directly & frequently used\\
+	\hline
+	part of pkzip, JPEG, MP3 & fax machines, & GIF, some variants of PDF,\\
+	& old picture-formats& Unix compress
+\end{tabular}
+
+\textbf{Text transformations}\\
+
+Move-to-front transformation (MTFT): \\
+Start with an initial dictionary stored in an array. If you have a long run of characters in $S$, then you would have a long run of 0's in $C$.\\
+
+Burrows-Wheeler Transform:\\
+Transforms source text to a coded text with the same letters, just in a different order.\\
+The coded text will be more easily compressible with MTFT (long runs of characters).\\
+Encoding needs all of $S$ (can't use streaming) as BWT is a block compression method.\\
+
+BWT Encoding:\\
+Assume the source text $S$ ends with a special end-of-word character \$ that occurs nowhere else in $S$. 
+\begin{enumerate}
+	\item Place all cyclic shifts of $S$ in a list $L$.
+	\item Sort the strings in $L$ lexicographically.
+	\item $C$ is the list of trailing characters of each stirng in $L$.
+\end{enumerate}
+$S$ = alf\vis eats\vis alfalfa\$\\
+$C$ = asff\$f\vis e\vis lllaaata\\
+
+BWT Decoding:\\
+Idea: Given $C$, we can generate the first column of the array by sorting. This tells us which character comes after each character in $S$. \\
+
+Analysis:\\
+Encoding cost: $O(n^2)$ using radix sort\\
+Sorting cyclic shifts is equivalent to sorting suffixes, possible in $O(n)$ time\\
+
+Decoding cost: $O(n)$, asymmetric\\
+
+bzip2 compression:\\
+BWT $\rightarrow$ MTFT $\rightarrow$ RLE $\rightarrow$ Huffman 
+
+
+}
+\end{document}
